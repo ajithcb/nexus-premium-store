@@ -280,17 +280,35 @@ function CheckoutView({ cart, clearCart, setOrders, orders, user }) {
   );
 }
 
-function HistoryView({ orders, user }) {
+function HomeView({ user }) {
+  const navigate = useNavigate();
+
   return (
-    <div style={styles.centeredFormWrapperWidthLimit}>
-      <h2>📋 History</h2>
-      {orders.length === 0 ? <p>No orders logged.</p> : orders.map((o) => (
-        <div key={o.orderId} style={styles.cardFormWhiteSurfaceBoxBackground}>
-          <h4>Order #{o.orderId}</h4>
-          <p>Destination: {o.shippingInfo.address}</p>
-          {o.items.map((i) => <p key={i._id}>• {i.name} (x{i.qty})</p>)}
-        </div>
-      ))}
+    <div style={styles.heroLayout}>
+      <h1 style={styles.heroHeadingTitle}>
+        Nexus Premium India
+      </h1>
+      <p style={styles.heroTextSubtitle}>
+        India's Ultimate Premium Online Shopping Store.
+        Explore our responsive catalog of authentic high-performance
+        electronics, mobile phones, gadgets, and tech accessories.
+        Experience secure checkout transactions, unbeatable value, 
+        and fast delivery configurations across India.
+      </p>
+      
+      {user ? (
+        <Link to="/products" style={styles.actionBtnHero}>
+          Explore Live Store →
+        </Link>
+      ) : (
+        /* BUTTON NOW LEADS SECURELY TO THE SIGN IN SCREEN */
+        <button 
+          style={styles.actionBtnHero} 
+          onClick={() => navigate('/login')}
+        >
+          Explore Live Store →
+        </button>
+      )}
     </div>
   );
 }
