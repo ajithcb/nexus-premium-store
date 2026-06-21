@@ -143,8 +143,8 @@ function AppContent({
       <div style={styles.pageBodyContent}>
         <Routes>
           <Route path="/" element={<HomeView user={user} />} />
-          <Route path="/products" element={<ProductsView products={products} addToCart={addToCart} />} />
-          <Route path="/cart" element={<CartView cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} />} />
+          <Route path="/products" element={user ? <ProductsView products={products} addToCart={addToCart} /> : <HomeView user={user} />} />
+          <Route path="/cart" element={user ? <CartView cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} /> : <HomeView user={user} />} />
           <Route path="/buy" element={<CheckoutView cart={cart} clearCart={() => setCart([])} setOrders={setOrders} orders={orders} user={user} />} />
           <Route path="/history" element={<HistoryView orders={orders} user={user} />} />
         </Routes>
@@ -158,29 +158,31 @@ function HomeView({ user }) {
 
   return (
     <div style={styles.heroLayout}>
+      {/* INDIA REMOVED FROM HEADING AND DESCRIPTIONS PERMANENTLY */}
       <h1 style={styles.heroHeadingTitle}>
-        Nexus Premium India
+        Nexus Premium
       </h1>
       <p style={styles.heroTextSubtitle}>
-        India's Ultimate Premium Online Shopping Store.
-        Explore our responsive catalog of authentic high-performance
+        Your Ultimate Premium Online Shopping Hub.
+        Explore a responsive catalog of authentic high-performance
         electronics, mobile phones, gadgets, and tech accessories.
         Experience secure checkout transactions, unbeatable value, 
-        and fast delivery configurations across India.
+        and fast delivery configurations worldwide.
       </p>
       
-      <button 
-        style={styles.actionBtnHero} 
-        onClick={() => {
-          if (user) {
-            navigate('/products');
-          } else {
-            alert("Please create an account or log in through your local system endpoints to authenticate storage access sheets.");
-          }
-        }}
-      >
-        Explore Live Store →
-      </button>
+      {user ? (
+        <Link to="/products" style={styles.actionBtnHero}>
+          Explore Live Store →
+        </Link>
+      ) : (
+        /* BUTTON RE-ROUTED DIRECTLY TO LOGIN PAGE */
+        <button 
+          style={styles.actionBtnHero} 
+          onClick={() => navigate('/login')}
+        >
+          Explore Live Store →
+        </button>
+      )}
     </div>
   );
 }
@@ -251,6 +253,7 @@ function CartView({ cart, addToCart, removeFromCart }) {
     </div>
   );
 }
+
 function CheckoutView({ cart, clearCart, setOrders, orders, user }) {
   const navigate = useNavigate();
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
@@ -276,7 +279,7 @@ function CheckoutView({ cart, clearCart, setOrders, orders, user }) {
       <div style={styles.cardFormWhiteSurfaceBoxBackground}>
         <form onSubmit={handlePayment}>
           <input type="text" placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <input type="tel" placeholder="Phone" pattern="[0-9]{10}" value={phone} onChange={(e) => setAddress(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <input type="tel" placeholder="Phone" pattern="[0-9]{10}" value={phone} onChange={(e) => setPhone(e.target.value)} required style={styles.formInputFieldBoxStyle} />
           <button type="submit" style={styles.financialTransactionApprovalBtn}>Pay ₹{total.toLocaleString('en-IN')}</button>
         </form>
       </div>
