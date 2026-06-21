@@ -107,7 +107,7 @@ function AppContent({
       <nav style={styles.navbar}>
         <div style={styles.brandLogo}>
           <Link to="/" style={styles.navLinkBrand} onClick={() => setShowDropdown(false)}>
-            🏢 NEXUS PREMIUM
+            🏬 NEXUS PREMIUM
           </Link>
         </div>
         
@@ -156,16 +156,17 @@ function AppContent({
 }
 
 function HomeView({ user }) {
+  const navigate = useNavigate();
+
   return (
     <div style={styles.heroLayout}>
       <h1 style={styles.heroHeadingTitle}>
         Nexus Premium
       </h1>
       <p style={styles.heroTextSubtitle}>
-        Your Ultimate Premium Online Shopping Store. Explore a wide range of
-        mobile phones, electronics, fashion, home appliances, and gadgets.
-        Enjoy authentic quality, unbeatable prices, and secure distribution
-        with super-fast shipping configurations.
+        Your Ultimate Premium Online Shopping Store. Explore our responsive
+        catalog of authentic high-performance electronics, mobile phones,
+        gadgets, and tech accessories with secure distribution worldwide.
       </p>
       
       {user ? (
@@ -176,102 +177,47 @@ function HomeView({ user }) {
     </div>
   );
 }
-function LoginView({ setUser }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://onrender.com';
-      const response = await fetch(`${API_URL}/api/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Error');
-      localStorage.setItem('nexusUser', JSON.stringify(data));
-      setUser(data);
-      alert(`Welcome, ${data.name}!`);
-      navigate('/products');
-    } catch (err) { alert(`Login Failed: ${err.message}`); }
-  };
-
-  return (
-    <div style={styles.centeredFormWrapperWidthLimit}>
-      <h2 style={styles.viewSectionHeadingTitle}>Sign In</h2>
-      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
-        <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <button type="submit" style={styles.financialTransactionApprovalBtn}>Login</button>
-          <p style={{ fontSize: '13px', marginTop: '15px', textAlign: 'center', color: '#94a3b8' }}>
-            New customer? <Link to="/register" style={{ color: '#3182ce' }}>Create account</Link>
-          </p>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function RegisterView({ setUser }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://onrender.com';
-      const response = await fetch(`${API_URL}/api/users/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Error');
-      localStorage.setItem('nexusUser', JSON.stringify(data));
-      setUser(data);
-      alert('Registration successful!');
-      navigate('/products');
-    } catch (err) { alert(`Registration Error: ${err.message}`); }
-  };
-
-  return (
-    <div style={styles.centeredFormWrapperWidthLimit}>
-      <h2 style={styles.viewSectionHeadingTitle}>Create Profile</h2>
-      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
-        <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <button type="submit" style={styles.financialTransactionApprovalBtn}>Register</button>
-          <p style={{ fontSize: '13px', marginTop: '15px', textAlign: 'center', color: '#94a3b8' }}>
-            Have an account? <Link to="/login" style={{ color: '#3182ce' }}>Sign In</Link>
-          </p>
-        </form>
-      </div>
-    </div>
-  );
-}
 function ProductsView({ products, addToCart }) {
   const [term, setTerm] = useState('');
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(term.toLowerCase())
   );
+
+  // FALLBACK ACCENT ACCORDING TO NAME STRING
+  const getFallbackIcon = (name) => {
+    const t = name ? name.toLowerCase() : '';
+    if (t.includes("airpod") || t.includes("buds")) return "🎧";
+    if (t.includes("keyboard")) return "⌨️";
+    if (t.includes("watch")) return "⌚";
+    if (t.includes("mouse")) return "🖱️";
+    return "👟";
+  };
+
   return (
     <div style={{ width: '100%' }}>
       <div style={{ marginBottom: '40px' }}>
-        <input type="text" placeholder="🔍 Search products..." value={term} onChange={(e) => setTerm(e.target.value)} style={styles.formInputFieldBoxStyle} />
+        <input 
+          type="text" 
+          placeholder="🔍 Search products..." 
+          value={term} 
+          onChange={(e) => setTerm(e.target.value)} 
+          style={styles.formInputFieldBoxStyle} 
+        />
       </div>
       <h2 style={styles.viewSectionHeadingTitle}>Collection ({filtered.length})</h2>
       <div style={styles.productGridResponsiveLayout}>
         {filtered.map((p) => (
           <div key={p._id} style={styles.productDisplayCardContainer}>
-            <div style={styles.cardImageHolderFrame}><img src={p.imageUrl} alt={p.name} style={styles.assetImageTagStyle} /></div>
+            
+            {/* CLEAN EMBEDDED DYNAMIC ICON LAYOUT ELEMENT */}
+            <div style={{
+              width: '100%', height: '140px', backgroundColor: '#111827',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '55px', userSelect: 'none', borderBottom: '1px solid #1f2937'
+            }}>
+              {getFallbackIcon(p.name)}
+            </div>
+
             <div style={styles.cardInformationContentWrapper}>
               <h3 style={styles.productLabelNameTextTitle}>{p.name}</h3>
               <p style={styles.productDescriptionParagraphBlock}>{p.description}</p>
