@@ -7,14 +7,6 @@ import {
   useNavigate
 } from 'react-router-dom';
 import { styles } from './styles';
-import ProductsView from './ProductsView';
-import CartView from './CartView';
-import {
-  CheckoutView,
-  HistoryView
-} from './CheckoutView';
-import LoginView from './LoginView';
-import RegisterView from './RegisterView';
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -54,9 +46,7 @@ export default function App() {
   );
   if (error) return (
     <div style={styles.center}>
-      <h2 style={{ color: 'red' }}>
-        ❌ Error
-      </h2>
+      <h2 style={{ color: 'red' }}>❌ Error</h2>
     </div>
   );
 
@@ -153,17 +143,16 @@ function AppContent({
       <div style={styles.pageBodyContent}>
         <Routes>
           <Route path="/" element={<HomeView user={user} />} />
-          <Route path="/products" element={user ? <ProductsView products={products} addToCart={addToCart} /> : <LoginView setUser={setUser} />} />
-          <Route path="/cart" element={user ? <CartView cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} /> : <LoginView setUser={setUser} />} />
+          <Route path="/products" element={user ? <ProductsView products={products} addToCart={addToCart} /> : <HomeView user={user} />} />
+          <Route path="/cart" element={user ? <CartView cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} /> : <HomeView user={user} />} />
           <Route path="/buy" element={<CheckoutView cart={cart} clearCart={() => setCart([])} setOrders={setOrders} orders={orders} user={user} />} />
           <Route path="/history" element={<HistoryView orders={orders} user={user} />} />
-          <Route path="/login" element={<LoginView setUser={setUser} />} />
-          <Route path="/register" element={<RegisterView setUser={setUser} />} />
         </Routes>
       </div>
     </div>
   );
 }
+
 function HomeView({ user }) {
   return (
     <div style={styles.heroLayout}>
@@ -183,12 +172,125 @@ function HomeView({ user }) {
           Explore Live Store →
         </Link>
       ) : (
-        <Link to="/login" style={styles.actionBtnHero}>
-          Sign In to Explore Live Store →
-        </Link>
+        <button style={styles.actionBtnHero} onClick={() => alert("Please sign up first via backend validation models.")}>
+          Explore Live Store →
+        </button>
+      )}
+    </div>
+  );
+}
+function ProductsView({ products, addToCart }) {
+  const [term, setTerm] = useState('');
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(term.toLowerCase())
+  );
+  return (
+    <div style={{ width: '100%' }}>
+      <div style={{ marginBottom: '40px' }}>
+        <input 
+          type="text" 
+          placeholder="🔍 Search products..." 
+          value={term} 
+          onChange={(e) => setTerm(e.target.value)} 
+          style={styles.formInputFieldBoxStyle} 
+        />
+      </div>
+      <h2 style={styles.viewSectionHeadingTitle}>Collection ({filtered.length})</h2>
+      <div style={styles.productGridResponsiveLayout}>
+        {filtered.map((p) => (
+          <div key={p._id} style={styles.productDisplayCardContainer}>
+            <div style={styles.cardImageHolderFrame}>
+              <img src={p.imageUrl} alt={p.name} style={styles.assetImageTagStyle} />
+            </div>
+            <div style={styles.cardInformationContentWrapper}>
+              <h3 style={styles.productLabelNameTextTitle}>{p.name}</h3>
+              <p style={styles.productDescriptionParagraphBlock}>{p.description}</p>
+              <div style={styles.cardActionFooterDataRow}>
+                <span style={styles.currencyPriceValueStyleTag}>₹{p.price.toLocaleString('en-IN')}</span>
+                <button onClick={() => addToCart(p)} style={styles.interactionPurchaseBtnStyle}>Add</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CartView({ cart, addToCart, removeFromCart }) {
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const navigate = useNavigate();
+  return (
+    <div style={styles.centeredFormWrapperWidthLimit}>
+      <h2 style={styles.viewSectionHeadingTitle}>Basket</h2>
+      {cart.length === 0 ? <p>Your cart is empty.</p> : (
+        <div style={styles.cardFormWhiteSurfaceBoxBackground}>
+          {cart.map((i) => (
+            <div key={i._id} style={styles.basketRecordRowFlexBorder}>
+              <div style={{ flex: '1' }}>
+                <h4>{i.name}</h4>
+                <span>{i.qty} x ₹{i.price.toLocaleString('en-IN')}</span>
+              </div>
+              <div>
+                <button onClick={() => removeFromCart(i)}>-</button>
+                <button onClick={() => addToCart(i)}>+</button>
+              </div>
+            </div>
+          ))}
+          <div style={styles.subtotalSummaryRowLabelFlex}>
+            <span>Total:</span><span>₹{total.toLocaleString('en-IN')}</span>
+          </div>
+          <button onClick={() => navigate('/buy')} style={styles.navigationForwardTerminalSubmitBtn}>Checkout</button>
+        </div>
       )}
     </div>
   );
 }
 
+function CheckoutView({ cart, clearCart, setOrders, orders, user }) {
+  const navigate = useNavigate();
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
+  const handlePayment = (e) => {
+    e.preventDefault();
+    const receipt = {
+      orderId: Math.floor(100000 + Math.random() * 900000),
+      date: new Date().toLocaleDateString(),
+      items: [...cart],
+      totalAmount: total,
+      shippingInfo: { name: user?.name || "Guest", address, phone }
+    };
+    setOrders([receipt, ...orders]);
+    clearCart();
+    alert("🎉 Order Placed!");
+    navigate('/history');
+  };
+  return (
+    <div style={styles.centeredFormWrapperWidthLimit}>
+      <h2>🔒 Checkout</h2>
+      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
+        <form onSubmit={handlePayment}>
+          <input type="text" placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <input type="tel" placeholder="Phone" pattern="[0-9]{10}" value={phone} onChange={(e) => setPhone(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <button type="submit" style={styles.financialTransactionApprovalBtn}>Pay ₹{total.toLocaleString('en-IN')}</button>
+        </form>
+      </div>
+    </div>
+  );
+}
 
+function HistoryView({ orders, user }) {
+  return (
+    <div style={styles.centeredFormWrapperWidthLimit}>
+      <h2>📋 History</h2>
+      {orders.length === 0 ? <p>No orders logged.</p> : orders.map((o) => (
+        <div key={o.orderId} style={styles.cardFormWhiteSurfaceBoxBackground}>
+          <h4>Order #{o.orderId}</h4>
+          <p>Destination: {o.shippingInfo.address}</p>
+          {o.items.map((i) => <p key={i._id}>• {i.name} (x{i.qty})</p>)}
+        </div>
+      ))}
+    </div>
+  );
+}
