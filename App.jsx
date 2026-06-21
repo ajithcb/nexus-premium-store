@@ -164,13 +164,16 @@ function HomeView({ user }) {
         Nexus Premium
       </h1>
       <p style={styles.heroTextSubtitle}>
-        Your Ultimate Premium Online Shopping Store. Explore our responsive
-        catalog of authentic high-performance electronics, mobile phones,
-        gadgets, and tech accessories with secure distribution worldwide.
+        Welcome to India's ultimate premium e-commerce destination. Discover our
+        curated catalog of authentic high-performance gadgets, sleek electronics,
+        and daily tech essentials. Enjoy unbeatable values, verified checkout
+        settlements, and secure door-to-door delivery setups across the nation.
       </p>
       
       {user ? (
-        <Link to="/products" style={styles.actionBtnHero}>Explore Live Store →</Link>
+        <Link to="/products" style={styles.actionBtnHero}>
+          Explore Live Store →
+        </Link>
       ) : (
         <button 
           style={styles.actionBtnHero} 
@@ -182,108 +185,52 @@ function HomeView({ user }) {
     </div>
   );
 }
-function LoginView({ setUser }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://onrender.com';
-      const response = await fetch(`${API_URL}/api/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Error');
-      localStorage.setItem('nexusUser', JSON.stringify(data));
-      setUser(data);
-      alert(`Welcome, ${data.name}!`);
-      navigate('/products');
-    } catch (err) { alert(`Login Failed: ${err.message}`); }
-  };
-
-  return (
-    <div style={styles.centeredFormWrapperWidthLimit}>
-      <h2 style={styles.viewSectionHeadingTitle}>Sign In</h2>
-      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
-        <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <button type="submit" style={styles.financialTransactionApprovalBtn}>Login</button>
-          <p style={{ fontSize: '13px', marginTop: '15px', textAlign: 'center', color: '#94a3b8' }}>
-            New customer? <Link to="/register" style={{ color: '#3182ce' }}>Create account</Link>
-          </p>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function RegisterView({ setUser }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://onrender.com';
-      const response = await fetch(`${API_URL}/api/users/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Error');
-      localStorage.setItem('nexusUser', JSON.stringify(data));
-      setUser(data);
-      alert('Registration successful!');
-      navigate('/products');
-    } catch (err) { alert(`Registration Error: ${err.message}`); }
-  };
-
-  return (
-    <div style={styles.centeredFormWrapperWidthLimit}>
-      <h2 style={styles.viewSectionHeadingTitle}>Create Profile</h2>
-      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
-        <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <button type="submit" style={styles.financialTransactionApprovalBtn}>Register</button>
-          <p style={{ fontSize: '13px', marginTop: '15px', textAlign: 'center', color: '#94a3b8' }}>
-            Have an account? <Link to="/login" style={{ color: '#3182ce' }}>Sign In</Link>
-          </p>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 function ProductsView({ products, addToCart }) {
   const [term, setTerm] = useState('');
-  const filtered = products.filter((p) => p.name.toLowerCase().includes(term.toLowerCase()));
-  const getFallbackIcon = (name) => {
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(term.toLowerCase())
+  );
+
+  // REPLACES THE ICONS WITH STABLE, ACTUAL E-COMMERCE STOCK IMAGES
+  const getProductPhoto = (name) => {
     const t = name ? name.toLowerCase() : '';
-    if (t.includes("airpod") || t.includes("buds")) return "🎧";
-    if (t.includes("keyboard")) return "⌨️";
-    if (t.includes("watch")) return "⌚";
-    if (t.includes("mouse")) return "🖱️";
-    return "📦";
+    if (t.includes("airpod") || t.includes("buds")) {
+      return "https://pexels.com";
+    }
+    if (t.includes("keyboard")) {
+      return "https://pexels.com";
+    }
+    if (t.includes("watch")) {
+      return "https://pexels.com";
+    }
+    if (t.includes("mouse")) {
+      return "https://pexels.com";
+    }
+    return "https://pexels.com";
   };
+
   return (
     <div style={{ width: '100%' }}>
-      <div style={{ marginBottom: '40px' }}><input type="text" placeholder="🔍 Search products..." value={term} onChange={(e) => setTerm(e.target.value)} style={styles.formInputFieldBoxStyle} /></div>
+      <div style={{ marginBottom: '40px' }}>
+        <input 
+          type="text" 
+          placeholder="🔍 Search products..." 
+          value={term} 
+          onChange={(e) => setTerm(e.target.value)} 
+          style={styles.formInputFieldBoxStyle} 
+        />
+      </div>
       <h2 style={styles.viewSectionHeadingTitle}>Collection ({filtered.length})</h2>
       <div style={styles.productGridResponsiveLayout}>
         {filtered.map((p) => (
           <div key={p._id} style={styles.productDisplayCardContainer}>
-            <div style={{ width: '100%', height: '140px', backgroundColor: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '55px', userSelect: 'none', borderBottom: '1px solid #1f2937' }}>
-              {getFallbackIcon(p.name)}
+            <div style={styles.cardImageHolderFrame}>
+              {/* LOADS ACTUAL REAL-WORLD PHOTOGRAPHY FOR EVERY CARD FRAME */}
+              <img 
+                src={getProductPhoto(p.name)} 
+                alt={p.name} 
+                style={styles.assetImageTagStyle} 
+              />
             </div>
             <div style={styles.cardInformationContentWrapper}>
               <h3 style={styles.productLabelNameTextTitle}>{p.name}</h3>
@@ -366,6 +313,68 @@ function HistoryView({ orders, user }) {
           {o.items.map((i) => <p key={i._id}>• {i.name} (x{i.qty})</p>)}
         </div>
       ))}
+    </div>
+  );
+}
+
+function LoginView({ setUser }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://onrender.com';
+      const response = await fetch(`${API_URL}/api/users/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Error');
+      localStorage.setItem('nexusUser', JSON.stringify(data));
+      setUser(data); alert(`Welcome, ${data.name}!`); navigate('/products');
+    } catch (err) { alert(`Login Failed: ${err.message}`); }
+  };
+  return (
+    <div style={styles.centeredFormWrapperWidthLimit}>
+      <h2 style={styles.viewSectionHeadingTitle}>Sign In</h2>
+      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
+        <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <button type="submit" style={styles.financialTransactionApprovalBtn}>Login</button>
+          <p style={{ fontSize: '13px', marginTop: '15px', textAlign: 'center', color: '#94a3b8' }}>New? <Link to="/register" style={{ color: '#3182ce' }}>Create account</Link></p>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function RegisterView({ setUser }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://onrender.com';
+      const response = await fetch(`${API_URL}/api/users/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Error');
+      localStorage.setItem('nexusUser', JSON.stringify(data));
+      setUser(data); alert('Registration successful!'); navigate('/products');
+    } catch (err) { alert(`Registration Error: ${err.message}`); }
+  };
+  return (
+    <div style={styles.centeredFormWrapperWidthLimit}>
+      <h2 style={styles.viewSectionHeadingTitle}>Create Profile</h2>
+      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
+        <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <button type="submit" style={styles.financialTransactionApprovalBtn}>Register</button>
+          <p style={{ fontSize: '13px', marginTop: '15px', textAlign: 'center', color: '#94a3b8' }}>Have an account? <Link to="/login" style={{ color: '#3182ce' }}>Sign In</Link></p>
+        </form>
+      </div>
     </div>
   );
 }
