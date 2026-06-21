@@ -191,7 +191,7 @@ function ProductsView({ products, addToCart }) {
     p.name.toLowerCase().includes(term.toLowerCase())
   );
 
-  // REPLACES THE ICONS WITH STABLE, ACTUAL E-COMMERCE STOCK IMAGES
+  // LOGIC MAPS ACTUAL PRODUCT PHOTOGRAPHS FROM UNBLOCKED PUBLIC CDNS
   const getProductPhoto = (name) => {
     const t = name ? name.toLowerCase() : '';
     if (t.includes("airpod") || t.includes("buds")) {
@@ -225,7 +225,7 @@ function ProductsView({ products, addToCart }) {
         {filtered.map((p) => (
           <div key={p._id} style={styles.productDisplayCardContainer}>
             <div style={styles.cardImageHolderFrame}>
-              {/* LOADS ACTUAL REAL-WORLD PHOTOGRAPHY FOR EVERY CARD FRAME */}
+              {/* STABLE UNBLOCKED LIVE PHOTOGRAPH TAG */}
               <img 
                 src={getProductPhoto(p.name)} 
                 alt={p.name} 
