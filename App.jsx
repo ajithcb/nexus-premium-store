@@ -1,11 +1,22 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { styles } from './styles';
-import ProductsView from './ProductsView';
-import CartView from './CartView';
-import { CheckoutView, HistoryView } from './CheckoutView';
-import LoginView from './LoginView';
-import RegisterView from './RegisterView';
+import {
+  useState,
+  useEffect
+} from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route
+} from "react-router-dom";
+import { styles } from "./styles";
+import Nav from "./Nav";
+import Catalog from "./Catalog";
+import CartView from "./CartView";
+import {
+  CheckoutView,
+  HistoryView
+} from "./CheckoutView";
+import LoginView from "./LoginView";
+import RegisterView from "./RegisterView";
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -14,130 +25,80 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [drop, setDrop] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('nexusUser');
+    const saved = localStorage.getItem("nexusUser");
     if (saved) setUser(JSON.parse(saved));
 
-    // ENVIRONMENT VARIABLE SELECTOR FOR GITHUB & RENDER
-    const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+    const fallbackUrl = "https://onrender.com";
+    const URL = import.meta.env.VITE_BACKEND_URL || fallbackUrl;
 
-    fetch(`${API_URL}/api/products`)
-      .then((res) => {
-        if (!res.ok) throw new Error('API down!');
-        return res.json();
+    fetch(`${URL}/api/products`)
+      .then((res) => res.json())
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
       })
-      .then((data) => { setProducts(data); setLoading(false); })
-      .catch((err) => { setError(err.message); setLoading(false); });
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
-  if (loading) return <div style={styles.center}><h2>⏳ Loading...</h2></div>;
-  if (error) return <div style={styles.center}><h2 style={{ color: 'red' }}>❌ Error</h2></div>;
+  const logout = () => {
+    localStorage.removeItem("nexusUser");
+    setUser(null);
+    setDrop(false);
+    window.location.href = "/";
+  };
+
+  const addToCart = (p) => {
+    const ex = cart.find((x) => x._id === p._id);
+    if (ex) {
+      setCart(
+        cart.map((x) =>
+          x._id === p._id ? { ...ex, qty: ex.qty + 1 } : x
+        )
+      );
+    } else {
+      setCart([...cart, { ...p, qty: 1 }]);
+    }
+  };
+
+  const removeFromCart = (p) => {
+    const ex = cart.find((x) => x._id === p._id);
+    if (ex.qty === 1) {
+      setCart(cart.filter((x) => x._id !== p._id));
+    } else {
+      setCart(
+        cart.map((x) =>
+          x._id === p._id ? { ...ex, qty: ex.qty - 1 } : x
+        )
+      );
+    }
+  };
+
+  if (loading) return <div>⏳</div>;
+  if (error) return <div>❌</div>;
 
   return (
     <Router>
-      <AppContent 
-        products={products} cart={cart} setCart={setCart}
-        orders={orders} setOrders={setOrders} user={user} setUser={setUser}
-      />
+      <div style={styles.appWrapper}>
+        <Nav user={user} cart={cart} setDrop={setDrop} drop={drop} logout={logout} />
+        <div style={styles.pageBodyContent}>
+          <Routes>
+            <Route path="/" element={<Catalog products={products} addToCart={addToCart} />} />
+            <Route path="/products" element={user ? <Catalog products={products} addToCart={addToCart} /> : <LoginView setUser={setUser} />} />
+            <Route path="/cart" element={user ? <CartView cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} /> : <LoginView setUser={setUser} />} />
+            <Route path="/buy" element={<CheckoutView cart={cart} clearCart={() => setCart([])} setOrders={setOrders} orders={orders} user={user} />} />
+            <Route path="/history" element={<HistoryView orders={orders} user={user} />} />
+            <Route path="/login" element={<LoginView setUser={setUser} />} />
+            <Route path="/register" element={<RegisterView setUser={setUser} />} />
+          </Routes>
+        </div>
+      </div>
     </Router>
   );
 }
 
-function AppContent({ products, cart, setCart, orders, setOrders, user, setUser }) {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem('nexusUser');
-    setUser(null);
-    setShowDropdown(false);
-    alert('Logged out safely.');
-    navigate('/'); 
-  };
-
-  const addToCart = (product) => {
-    const exist = cart.find((x) => x._id === product._id);
-    if (exist) {
-      setCart(cart.map((x) => x._id === product._id ? { ...exist, qty: exist.qty + 1 } : x));
-    } else {
-      setCart([...cart, { ...product, qty: 1 }]);
-    }
-  };
-
-  const removeFromCart = (product) => {
-    const exist = cart.find((x) => x._id === product._id);
-    if (exist.qty === 1) {
-      setCart(cart.filter((x) => x._id !== product._id));
-    } else {
-      setCart(cart.map((x) => x._id === product._id ? { ...exist, qty: exist.qty - 1 } : x));
-    }
-  };
-
-  return (
-    <div style={styles.appWrapper}>
-      <nav style={styles.navbar}>
-        <div style={styles.brandLogo}>
-          <Link to="/" style={styles.navLinkBrand} onClick={() => setShowDropdown(false)}>
-            🏬 NEXUS PREMIUM
-          </Link>
-        </div>
-        
-        {user && (
-          <div style={styles.linkGroup}>
-            <Link to="/products" style={styles.linkItem} onClick={() => setShowDropdown(false)}>Products</Link>
-            <Link to="/cart" style={styles.linkItem} onClick={() => setShowDropdown(false)}>Cart ({cart.reduce((a, c) => a + c.qty, 0)})</Link>
-            
-            <div style={styles.profileBadgeIconCircle} onClick={() => setShowDropdown(!showDropdown)}>
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-
-            {showDropdown && (
-              <div style={styles.profileDropdownContainerBox}>
-                <div style={{ borderBottom: '1px solid #334155', paddingBottom: '8px' }}>
-                  <p style={{ margin: '0', fontSize: '14px', fontWeight: 'bold' }}>{user.name}</p>
-                  <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>{user.email}</p>
-                </div>
-                
-                <Link to="/history" style={{ ...styles.linkItem, display: 'block', padding: '4px 0' }} onClick={() => setShowDropdown(false)}>
-                  📋 View Purchase History
-                </Link>
-                
-                <button onClick={handleLogout} style={{ width: '100%', backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', marginTop: '5px' }}>
-                  Logout Session
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </nav>
-
-      <div style={styles.pageBodyContent}>
-        <Routes>
-          <Route path="/" element={<HomeView user={user} />} />
-          <Route path="/products" element={user ? <ProductsView products={products} addToCart={addToCart} /> : <LoginView setUser={setUser} />} />
-          <Route path="/cart" element={user ? <CartView cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} /> : <LoginView setUser={setUser} />} />
-          <Route path="/buy" element={<CheckoutView cart={cart} clearCart={() => setCart([])} setOrders={setOrders} orders={orders} user={user} />} />
-          <Route path="/history" element={<HistoryView orders={orders} user={user} />} />
-          <Route path="/login" element={<LoginView setUser={setUser} />} />
-          <Route path="/register" element={<RegisterView setUser={setUser} />} />
-        </Routes>
-      </div>
-    </div>
-  );
-}
-
-function HomeView({ user }) {
-  return (
-    <div style={styles.heroLayout}>
-      <h1 style={styles.heroHeadingTitle}>Flipkart / Nexus Premium India</h1>
-      <p style={styles.heroTextSubtitle}>India's Ultimate Online Shopping Destination. Explore a wide range of mobile phones, electronics, fashion, home appliances, and gadgets. Enjoy authentic quality, unbeatable prices, and cash-on-delivery options with super-fast shipping across India.</p>
-      
-      {user ? (
-        <Link to="/products" style={styles.actionBtnHero}>Explore Live Store →</Link>
-      ) : (
-        <Link to="/login" style={styles.actionBtnHero}>Sign In to Explore Live Store →</Link>
-      )}
-    </div>
-  );
-}
