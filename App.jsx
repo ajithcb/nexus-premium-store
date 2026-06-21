@@ -1,74 +1,70 @@
+import { useState, useEffect } from 'react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useNavigate
+} from 'react-router-dom';
+import { styles } from './styles';
 
+export default function App() {
+  const [products, setProducts] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
 
-function CartView({ cart, addToCart, removeFromCart }) {
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const navigate = useNavigate();
-  return (
-    <div style={styles.centeredFormWrapperWidthLimit}>
-      <h2 style={styles.viewSectionHeadingTitle}>Basket</h2>
-      {cart.length === 0 ? <p>Your cart is empty.</p> : (
-        <div style={styles.cardFormWhiteSurfaceBoxBackground}>
-          {cart.map((i) => (
-            <div key={i._id} style={styles.basketRecordRowFlexBorder}>
-              <div style={{ flex: '1' }}><h4>{i.name}</h4><span>{i.qty} x ₹{i.price.toLocaleString('en-IN')}</span></div>
-              <div><button onClick={() => removeFromCart(i)}>-</button><button onClick={() => addToCart(i)}>+</button></div>
-            </div>
-          ))}
-          <div style={styles.subtotalSummaryRowLabelFlex}><span>Total:</span><span>₹{total.toLocaleString('en-IN')}</span></div>
-          <button onClick={() => navigate('/buy')} style={styles.navigationForwardTerminalSubmitBtn}>Checkout</button>
-        </div>
-      )}
+  useEffect(() => {
+    const saved = localStorage.getItem('nexusUser');
+    if (saved) setUser(JSON.parse(saved));
+
+    const env = import.meta.env.VITE_BACKEND_URL;
+    const fall = 'https://onrender.com';
+    const API_URL = env || fall;
+
+    fetch(`${API_URL}/api/products`)
+      .then((res) => {
+        if (!res.ok) throw new Error('API down!');
+        return res.json();
+      })
+      .then((data) => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return (
+    <div style={styles.center}>
+      <h2>⏳ Loading...</h2>
     </div>
+  );
+  if (error) return (
+    <div style={styles.center}>
+      <h2 style={{ color: 'red' }}>❌ Error</h2>
+    </div>
+  );
+
+  return (
+    <Router>
+      <AppContent 
+        products={products}
+        cart={cart}
+        setCart={setCart}
+        orders={orders}
+        setOrders={setOrders}
+        user={user}
+        setUser={setUser}
+      />
+    </Router>
   );
 }
-
-function CheckoutView({ cart, clearCart, setOrders, orders, user }) {
-  const navigate = useNavigate();
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const [address, setAddress] = useState('');
-  const [phone, setPhone] = useState('');
-  const handlePayment = (e) => {
-    e.preventDefault();
-    const receipt = {
-      orderId: Math.floor(100000 + Math.random() * 900000),
-      date: new Date().toLocaleDateString(),
-      items: [...cart],
-      totalAmount: total,
-      shippingInfo: { name: user?.name || "Guest", address, phone }
-    };
-    setOrders([receipt, ...orders]);
-    clearCart();
-    alert("🎉 Order Placed!");
-    navigate('/history');
-  };
-  return (
-    <div style={styles.centeredFormWrapperWidthLimit}>
-      <h2>🔒 Checkout</h2>
-      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
-        <form onSubmit={handlePayment}>
-          <input type="text" placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <input type="tel" placeholder="Phone" pattern="[0-9]{10}" value={phone} onChange={(e) => setPhone(e.target.value)} required style={styles.formInputFieldBoxStyle} />
-          <button type="submit" style={styles.financialTransactionApprovalBtn}>Pay ₹{total.toLocaleString('en-IN')}</button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function HistoryView({ orders, user }) {
-  return (
-    <div style={styles.centeredFormWrapperWidthLimit}>
-      <h2>📋 History</h2>
-      {orders.length === 0 ? <p>No orders logged.</p> : orders.map((o) => (
-        <div key={o.orderId} style={styles.cardFormWhiteSurfaceBoxBackground}>
-          <h4>Order #{o.orderId}</h4>
-          <p>Destination: {o.shippingInfo.address}</p>
-          {o.items.map((i) => <p key={i._id}>• {i.name} (x{i.qty})</p>)}
-        </div>
-      ))}
-    </div>
-  );
-  function AppContent({
+function AppContent({
   products,
   cart,
   setCart,
@@ -186,9 +182,6 @@ function HomeView({ user }) {
     </div>
   );
 }
-
-}
-
 function LoginView({ setUser }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
