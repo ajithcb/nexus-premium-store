@@ -143,10 +143,12 @@ function AppContent({
       <div style={styles.pageBodyContent}>
         <Routes>
           <Route path="/" element={<HomeView user={user} />} />
-          <Route path="/products" element={user ? <ProductsView products={products} addToCart={addToCart} /> : <HomeView user={user} />} />
-          <Route path="/cart" element={user ? <CartView cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} /> : <HomeView user={user} />} />
+          <Route path="/products" element={user ? <ProductsView products={products} addToCart={addToCart} /> : <LoginView setUser={setUser} />} />
+          <Route path="/cart" element={user ? <CartView cart={cart} addToCart={addToCart} removeFromCart={removeFromCart} /> : <LoginView setUser={setUser} />} />
           <Route path="/buy" element={<CheckoutView cart={cart} clearCart={() => setCart([])} setOrders={setOrders} orders={orders} user={user} />} />
           <Route path="/history" element={<HistoryView orders={orders} user={user} />} />
+          <Route path="/login" element={<LoginView setUser={setUser} />} />
+          <Route path="/register" element={<RegisterView setUser={setUser} />} />
         </Routes>
       </div>
     </div>
@@ -158,7 +160,6 @@ function HomeView({ user }) {
 
   return (
     <div style={styles.heroLayout}>
-      {/* INDIA REMOVED FROM HEADING AND DESCRIPTIONS PERMANENTLY */}
       <h1 style={styles.heroHeadingTitle}>
         Nexus Premium
       </h1>
@@ -175,7 +176,6 @@ function HomeView({ user }) {
           Explore Live Store →
         </Link>
       ) : (
-        /* BUTTON RE-ROUTED DIRECTLY TO LOGIN PAGE */
         <button 
           style={styles.actionBtnHero} 
           onClick={() => navigate('/login')}
@@ -186,29 +186,99 @@ function HomeView({ user }) {
     </div>
   );
 }
+function LoginView({ setUser }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://onrender.com';
+      const response = await fetch(`${API_URL}/api/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Error');
+      localStorage.setItem('nexusUser', JSON.stringify(data));
+      setUser(data);
+      alert(`Welcome, ${data.name}!`);
+      navigate('/products');
+    } catch (err) { alert(`Login Failed: ${err.message}`); }
+  };
+
+  return (
+    <div style={styles.centeredFormWrapperWidthLimit}>
+      <h2 style={styles.viewSectionHeadingTitle}>Sign In</h2>
+      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
+        <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <button type="submit" style={styles.financialTransactionApprovalBtn}>Login</button>
+          <p style={{ fontSize: '13px', marginTop: '15px', textAlign: 'center', color: '#94a3b8' }}>
+            New customer? <Link to="/register" style={{ color: '#3182ce' }}>Create account</Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function RegisterView({ setUser }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://onrender.com';
+      const response = await fetch(`${API_URL}/api/users/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Error');
+      localStorage.setItem('nexusUser', JSON.stringify(data));
+      setUser(data);
+      alert('Registration successful!');
+      navigate('/products');
+    } catch (err) { alert(`Registration Error: ${err.message}`); }
+  };
+
+  return (
+    <div style={styles.centeredFormWrapperWidthLimit}>
+      <h2 style={styles.viewSectionHeadingTitle}>Create Profile</h2>
+      <div style={styles.cardFormWhiteSurfaceBoxBackground}>
+        <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={styles.formInputFieldBoxStyle} />
+          <button type="submit" style={styles.financialTransactionApprovalBtn}>Register</button>
+          <p style={{ fontSize: '13px', marginTop: '15px', textAlign: 'center', color: '#94a3b8' }}>
+            Have an account? <Link to="/login" style={{ color: '#3182ce' }}>Sign In</Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function ProductsView({ products, addToCart }) {
   const [term, setTerm] = useState('');
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(term.toLowerCase())
-  );
+  const filtered = products.filter((p) => p.name.toLowerCase().includes(term.toLowerCase()));
   return (
     <div style={{ width: '100%' }}>
-      <div style={{ marginBottom: '40px' }}>
-        <input 
-          type="text" 
-          placeholder="🔍 Search products..." 
-          value={term} 
-          onChange={(e) => setTerm(e.target.value)} 
-          style={styles.formInputFieldBoxStyle} 
-        />
-      </div>
+      <div style={{ marginBottom: '40px' }}><input type="text" placeholder="🔍 Search products..." value={term} onChange={(e) => setTerm(e.target.value)} style={styles.formInputFieldBoxStyle} /></div>
       <h2 style={styles.viewSectionHeadingTitle}>Collection ({filtered.length})</h2>
       <div style={styles.productGridResponsiveLayout}>
         {filtered.map((p) => (
           <div key={p._id} style={styles.productDisplayCardContainer}>
-            <div style={styles.cardImageHolderFrame}>
-              <img src={p.imageUrl} alt={p.name} style={styles.assetImageTagStyle} />
-            </div>
+            <div style={styles.cardImageHolderFrame}><img src={p.imageUrl} alt={p.name} style={styles.assetImageTagStyle} /></div>
             <div style={styles.cardInformationContentWrapper}>
               <h3 style={styles.productLabelNameTextTitle}>{p.name}</h3>
               <p style={styles.productDescriptionParagraphBlock}>{p.description}</p>
@@ -234,19 +304,11 @@ function CartView({ cart, addToCart, removeFromCart }) {
         <div style={styles.cardFormWhiteSurfaceBoxBackground}>
           {cart.map((i) => (
             <div key={i._id} style={styles.basketRecordRowFlexBorder}>
-              <div style={{ flex: '1' }}>
-                <h4>{i.name}</h4>
-                <span>{i.qty} x ₹{i.price.toLocaleString('en-IN')}</span>
-              </div>
-              <div>
-                <button onClick={() => removeFromCart(i)}>-</button>
-                <button onClick={() => addToCart(i)}>+</button>
-              </div>
+              <div style={{ flex: '1' }}><h4>{i.name}</h4><span>{i.qty} x ₹{i.price.toLocaleString('en-IN')}</span></div>
+              <div><button onClick={() => removeFromCart(i)}>-</button><button onClick={() => addToCart(i)}>+</button></div>
             </div>
           ))}
-          <div style={styles.subtotalSummaryRowLabelFlex}>
-            <span>Total:</span><span>₹{total.toLocaleString('en-IN')}</span>
-          </div>
+          <div style={styles.subtotalSummaryRowLabelFlex}><span>Total:</span><span>₹{total.toLocaleString('en-IN')}</span></div>
           <button onClick={() => navigate('/buy')} style={styles.navigationForwardTerminalSubmitBtn}>Checkout</button>
         </div>
       )}
