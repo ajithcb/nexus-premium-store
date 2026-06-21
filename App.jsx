@@ -107,7 +107,7 @@ function AppContent({
       <nav style={styles.navbar}>
         <div style={styles.brandLogo}>
           <Link to="/" style={styles.navLinkBrand} onClick={() => setShowDropdown(false)}>
-            🏬 NEXUS PREMIUM
+            🏢 NEXUS PREMIUM
           </Link>
         </div>
         
@@ -156,32 +156,22 @@ function AppContent({
 }
 
 function HomeView({ user }) {
-  const navigate = useNavigate();
-
   return (
     <div style={styles.heroLayout}>
       <h1 style={styles.heroHeadingTitle}>
         Nexus Premium
       </h1>
       <p style={styles.heroTextSubtitle}>
-        Your Ultimate Premium Online Shopping Hub.
-        Explore a responsive catalog of authentic high-performance
-        electronics, mobile phones, gadgets, and tech accessories.
-        Experience secure checkout transactions, unbeatable value, 
-        and fast delivery configurations worldwide.
+        Your Ultimate Premium Online Shopping Store. Explore a wide range of
+        mobile phones, electronics, fashion, home appliances, and gadgets.
+        Enjoy authentic quality, unbeatable prices, and secure distribution
+        with super-fast shipping configurations.
       </p>
       
       {user ? (
-        <Link to="/products" style={styles.actionBtnHero}>
-          Explore Live Store →
-        </Link>
+        <Link to="/products" style={styles.actionBtnHero}>Explore Live Store →</Link>
       ) : (
-        <button 
-          style={styles.actionBtnHero} 
-          onClick={() => navigate('/login')}
-        >
-          Explore Live Store →
-        </button>
+        <Link to="/login" style={styles.actionBtnHero}>Sign In to Explore Live Store →</Link>
       )}
     </div>
   );
@@ -267,13 +257,16 @@ function RegisterView({ setUser }) {
     </div>
   );
 }
-
 function ProductsView({ products, addToCart }) {
   const [term, setTerm] = useState('');
-  const filtered = products.filter((p) => p.name.toLowerCase().includes(term.toLowerCase()));
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(term.toLowerCase())
+  );
   return (
     <div style={{ width: '100%' }}>
-      <div style={{ marginBottom: '40px' }}><input type="text" placeholder="🔍 Search products..." value={term} onChange={(e) => setTerm(e.target.value)} style={styles.formInputFieldBoxStyle} /></div>
+      <div style={{ marginBottom: '40px' }}>
+        <input type="text" placeholder="🔍 Search products..." value={term} onChange={(e) => setTerm(e.target.value)} style={styles.formInputFieldBoxStyle} />
+      </div>
       <h2 style={styles.viewSectionHeadingTitle}>Collection ({filtered.length})</h2>
       <div style={styles.productGridResponsiveLayout}>
         {filtered.map((p) => (
