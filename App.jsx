@@ -331,7 +331,10 @@ function AppContent({
             }
           />
         </Routes>
-      </div>function HomeView({ user }) {
+      </div>
+    </div>
+  );
+  function HomeView({ user }) {
   return (
     <div style={styles.heroLayout}>
       <h1
@@ -587,7 +590,5 @@ function HistoryView({ orders, user }) {
   );
 }
 
-    </div>
-  );
 }
 
