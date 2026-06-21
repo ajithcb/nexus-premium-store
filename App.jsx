@@ -164,10 +164,9 @@ function HomeView({ user }) {
         Nexus Premium
       </h1>
       <p style={styles.heroTextSubtitle}>
-        Welcome to India's ultimate premium e-commerce destination. Discover our
-        curated catalog of authentic high-performance gadgets, sleek electronics,
-        and daily tech essentials. Enjoy unbeatable values, verified checkout
-        settlements, and secure door-to-door delivery setups across the nation.
+       Your Ultimate Premium Online Shopping Store. Explore our responsive
+        catalog of authentic high-performance electronics, mobile phones,
+        gadgets, and tech accessories with secure distribution worldwide.
       </p>
       
       {user ? (
